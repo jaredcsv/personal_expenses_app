@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="167.17455mm"
+   height="19.064163mm"
+   viewBox="0 0 167.17455 19.064163"
+   version="1.1"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="layer1"
+     transform="translate(-15.002632,-124.7656)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.7556px;line-height:1;font-family:'Agenor Neue';-inkscape-font-specification:'Agenor Neue, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:2.64583px;word-spacing:0px;fill:#000000;fill-opacity:0.941176;stroke-width:32.0601;stroke-linejoin:round"
+       x="13.422184"
+       y="139.46376"
+       id="text1"><tspan
+         id="tspan1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.7556px;font-family:'Agenor Neue';-inkscape-font-specification:'Agenor Neue, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;stroke-width:32.06"
+         x="13.422184"
+         y="139.46376">Expense Sight</tspan></text>
+    <circle
+       style="fill:#4e4feb;fill-opacity:0.941176;stroke-width:60.558;stroke-linejoin:round"
+       id="path2-4"
+       cx="20.218754"
+       cy="128.77208"
+       r="1.2193245" />
+    <circle
+       style="fill:#4e4feb;fill-opacity:0.941176;stroke-width:60.558;stroke-linejoin:round"
+       id="path2"
+       cx="23.749537"
+       cy="128.77502"
+       r="1.2193245" />
+  </g>
+</svg>
