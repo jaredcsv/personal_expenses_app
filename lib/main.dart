@@ -9,7 +9,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Personal Expenses Tracker',
+      title: 'Expenses Sight',
       theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Pavanam'),
       home: HomeScreen(),
     );
