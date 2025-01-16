@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:personal_expenses_app/data/database_helper.dart';
+import 'package:personal_expenses_app/utils/expense_form_helper.dart';
 import '../models/expense.dart';
 
 class CreateExpenseScreen extends StatefulWidget {
@@ -25,21 +26,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
     'Other'
   ];
 
-  void _pickDate() async {
-    DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (pickedDate != null) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    }
-  }
-
-  void _onSave() async {
+  Future<void> _onSave() async {
     if (_formKey.currentState!.validate()) {
       final expense = Expense(
         name: _nameController.text,
@@ -53,23 +40,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
       if (result > 0) {
         Navigator.pop(context);
       } else {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Error'),
-              content: Text('Failed to save expense.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
+        showErrorDialog(context, 'Failed to save expense.');
       }
     }
   }
@@ -81,7 +52,9 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text('Create Expense'),
       ),
       body: Padding(
@@ -92,9 +65,9 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextFormField(
+                buildTextFormField(
+                  label: 'Name',
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: 'Name'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a name';
@@ -102,9 +75,9 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                     return null;
                   },
                 ),
-                TextFormField(
+                buildTextFormField(
+                  label: 'Amount',
                   controller: _amountController,
-                  decoration: InputDecoration(labelText: 'Amount'),
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -118,6 +91,7 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                 ),
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(labelText: 'Category'),
+                  dropdownColor: Colors.white,
                   value: _selectedCategory,
                   items: _categories
                       .map((category) => DropdownMenuItem(
@@ -137,10 +111,9 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                     return null;
                   },
                 ),
-                TextFormField(
+                buildTextFormField(
+                  label: 'Description',
                   controller: _descriptionController,
-                  decoration: InputDecoration(labelText: 'Description'),
-                  maxLines: 3,
                 ),
                 SizedBox(height: 16),
                 Row(
@@ -150,11 +123,24 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                         _selectedDate != null
                             ? 'Date: ${DateFormat.yMMMd().format(_selectedDate!)}'
                             : 'No date selected',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: _pickDate,
-                      child: Text('Pick Date'),
+                      onPressed: () async {
+                        final date = await pickDate(context);
+                        if (date != null) {
+                          setState(() {
+                            _selectedDate = date;
+                          });
+                        }
+                      },
+                      child: Text(
+                        'Pick Date',
+                        style: TextStyle(
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -164,13 +150,17 @@ class _CreateExpenseScreenState extends State<CreateExpenseScreen> {
                   children: [
                     ElevatedButton(
                       onPressed: _onCancel,
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey),
-                      child: Text('Cancel'),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(fontSize: 16, color: Colors.red),
+                      ),
                     ),
                     ElevatedButton(
                       onPressed: _onSave,
-                      child: Text('Save'),
+                      child: Text(
+                        'Save',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
                   ],
                 ),

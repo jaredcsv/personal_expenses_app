@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:personal_expenses_app/data/database_helper.dart';
-import 'package:personal_expenses_app/models/expense.dart';
+import 'package:personal_expenses_app/utils/expense_form_helper.dart'; // Import helper
 
 class EditExpenseScreen extends StatefulWidget {
   final int expenseId;
@@ -33,14 +32,22 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   late DateTime _selectedDate;
   late String _selectedCategory;
 
-  final List<String> _categories = ['Food', 'Travel', 'Shopping', 'Health', 'Other'];
+  final List<String> _categories = [
+    'Food',
+    'Travel',
+    'Shopping',
+    'Health',
+    'Other'
+  ];
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.initialName);
-    _amountController = TextEditingController(text: widget.initialAmount.toString());
-    _descriptionController = TextEditingController(text: widget.initialDescription);
+    _amountController =
+        TextEditingController(text: widget.initialAmount.toString());
+    _descriptionController =
+        TextEditingController(text: widget.initialDescription);
     _selectedDate = widget.initialDate;
     _selectedCategory = widget.initialCategory;
   }
@@ -61,8 +68,8 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
 
   void _onSave() async {
     if (_formKey.currentState!.validate()) {
-      final updatedExpense = Expense(
-        id: widget.expenseId,
+      final success = await updateExpense(
+        expenseId: widget.expenseId,
         name: _nameController.text,
         amount: double.parse(_amountController.text),
         category: _selectedCategory,
@@ -70,21 +77,39 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
         date: _selectedDate,
       );
 
-      await DatabaseHelper.instance.updateExpense(updatedExpense);
-
-      Navigator.pop(context); // Regresa a la pantalla anterior
+      if (success) {
+        Navigator.pop(context);
+      } else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text('Failed to update expense.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
+      }
     }
   }
 
   void _onCancel() {
-    Navigator.pop(context); // Cierra la pantalla sin hacer cambios
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text('Edit Expense'),
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -120,6 +145,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                 ),
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(labelText: 'Category'),
+                  dropdownColor: Colors.white,
                   value: _selectedCategory,
                   items: _categories
                       .map((category) => DropdownMenuItem(
@@ -142,7 +168,6 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                 TextFormField(
                   controller: _descriptionController,
                   decoration: InputDecoration(labelText: 'Description'),
-                  maxLines: 3,
                 ),
                 SizedBox(height: 16),
                 Row(
@@ -150,11 +175,15 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                     Expanded(
                       child: Text(
                         'Date: ${DateFormat.yMMMd().format(_selectedDate)}',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
                     ElevatedButton(
                       onPressed: _pickDate,
-                      child: Text('Pick Date'),
+                      child: Text(
+                        'Pick Date',
+                        style: TextStyle(fontSize: 14,),
+                      ),
                     ),
                   ],
                 ),
@@ -162,13 +191,19 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    TextButton(
+                    ElevatedButton(
                       onPressed: _onCancel,
-                      child: Text('Cancel'),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(fontSize: 16, color: Colors.red),
+                      ),
                     ),
-                    TextButton(
+                    ElevatedButton(
                       onPressed: _onSave,
-                      child: Text('Save'),
+                      child: Text(
+                        'Save',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
                   ],
                 ),
