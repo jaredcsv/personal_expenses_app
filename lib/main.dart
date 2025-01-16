@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Expenses Sight',
-      theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'Pavanam'),
+      theme: ThemeData(primarySwatch: Colors.lightBlue, fontFamily: 'Pavanam'),
       home: HomeScreen(),
     );
   }
