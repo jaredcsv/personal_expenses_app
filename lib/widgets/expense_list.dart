@@ -1,106 +1,187 @@
 import 'package:flutter/material.dart';
-import '../models/expense.dart';
-import '../data/database_helper.dart';
+import 'package:intl/intl.dart'; // Import for date formatting
+import 'package:personal_expenses_app/models/expense.dart';
+import 'package:personal_expenses_app/screens/edit_expense_screen.dart';
 
-class ExpenseList extends StatefulWidget {
-  @override
-  _ExpenseListState createState() => _ExpenseListState();
-}
+class ExpenseList extends StatelessWidget {
+  final List<Expense> expenses;
+  final Function(int id) onDelete;
+  final Future<void> Function() reloadExpenses;
 
-class _ExpenseListState extends State<ExpenseList> {
-  List<Expense> _expenses = [];
-  bool _isLoading = true;
+  ExpenseList({
+    required this.expenses,
+    required this.onDelete,
+    required this.reloadExpenses,
+  });
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchExpenses();
-  }
+  Future<void> _showDeleteConfirmationDialog(BuildContext context, int id) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          backgroundColor: Colors.white,
+          content: Text(
+              'Are you sure you want to delete this expense? This action is irreversible.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // No
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Yes
+              },
+              child: Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
 
-  Future<void> _fetchExpenses() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    final expenses = await DatabaseHelper.instance.readAllExpenses();
-    setState(() {
-      _expenses = expenses;
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _deleteExpense(int id) async {
-    await DatabaseHelper.instance.deleteExpense(id);
-    _fetchExpenses();
+    if (result == true) {
+      onDelete(id);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
-    }
-
-    if (_expenses.isEmpty) {
-      return Center(
-        child: Text(
-          'No Transactions',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: _expenses.length,
-      itemBuilder: (context, index) {
-        final expense = _expenses[index];
-        return Card(
-          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          elevation: 2,
-          child: ListTile(
-            leading: CircleAvatar(
-              child: Icon(Icons.attach_money, color: Colors.white),
-              backgroundColor: Colors.blue,
+    return expenses.isEmpty
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/img/no-transactions.png',
+                  height: 150,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'No Transactions',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
-            title: Text(expense.description),
-            subtitle: Text('${expense.category} • ${expense.date.toLocal().toString().split(' ')[0]}'),
-            trailing: Text(
-              '\$${expense.amount.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
-            ),
-            onTap: () {
-              // Acción al tocar un elemento, como abrir una pantalla de detalles.
-            },
-            onLongPress: () async {
-              // Confirmación para eliminar el gasto.
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text('Eliminar Gasto'),
-                    content: Text('¿Estás seguro de que quieres eliminar este gasto?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: Text('Cancelar'),
+          )
+        : ListView.builder(
+            itemCount: expenses.length,
+            itemBuilder: (context, index) {
+              final expense = expenses[index];
+              return Card(
+                color: Colors.white,
+                margin: EdgeInsets.symmetric(vertical: 4),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              expense.name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          PopupMenuButton<String>(
+                            color: Colors.white,
+                            onSelected: (value) async {
+                              if (value == 'edit') {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditExpenseScreen(
+                                      initialName: expense.name,
+                                      initialAmount: expense.amount,
+                                      initialCategory: expense.category,
+                                      initialDescription: expense.description,
+                                      initialDate: expense.date,
+                                      expenseId: expense.id!,
+                                    ),
+                                  ),
+                                );
+                                reloadExpenses();
+                              } else if (value == 'delete') {
+                                await _showDeleteConfirmationDialog(
+                                    context, expense.id!);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit,
+                                        color: Colors.black, size: 16),
+                                    SizedBox(width: 6),
+                                    Text('Edit',
+                                        style: TextStyle(fontSize: 14)),
+                                  ],
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.delete,
+                                        color: Colors.red, size: 16),
+                                    SizedBox(width: 6),
+                                    Text('Delete',
+                                        style: TextStyle(fontSize: 14)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: Text('Eliminar'),
+                      Text(
+                        '\$${expense.amount.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.green[700],
+                        ),
+                      ),
+                      if (expense.description.isNotEmpty)
+                        Text(
+                          expense.description,
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      Text(
+                        '${expense.category}, ${DateFormat.yMMMd().format(expense.date)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
-                  );
-                },
+                  ),
+                ),
               );
-              if (confirm == true) {
-                _deleteExpense(expense.id!);
-              }
             },
-          ),
-        );
-      },
-    );
+          );
   }
 }
